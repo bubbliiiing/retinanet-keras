@@ -1,13 +1,18 @@
 import os
 import random 
  
-xmlfilepath=r'./VOCdevkit/VOC2012/Annotations'
-saveBasePath=r"./VOCdevkit/VOC2012/ImageSets/Main/"
+xmlfilepath=r'./VOCdevkit/VOC2007/Annotations'
+saveBasePath=r"./VOCdevkit/VOC2007/ImageSets/Main/"
  
 trainval_percent=1
 train_percent=1
 
-total_xml = os.listdir(xmlfilepath)
+temp_xml = os.listdir(xmlfilepath)
+total_xml = []
+for xml in temp_xml:
+    if xml.endswith(".xml"):
+        total_xml.append(xml)
+
 num=len(total_xml)  
 list=range(num)  
 tv=int(num*trainval_percent)  
