@@ -73,5 +73,5 @@ if __name__ == "__main__":
             validation_steps=num_val//BATCH_SIZE,
             epochs=50, 
             verbose=1,
-            initial_epoch=14,
+            initial_epoch=10,
             callbacks=[logging, checkpoint, reduce_lr, early_stopping])
