@@ -37,7 +37,7 @@ class mAP_Retinanet(Retinanet):
         boxes = retinanet_correct_boxes(top_ymin,top_xmin,top_ymax,top_xmax,np.array([self.model_image_size[0],self.model_image_size[1]]),image_shape)
 
         for i, c in enumerate(top_label_indices):
-            predicted_class = self.class_names[int(c)-1]
+            predicted_class = self.class_names[int(c)]
             score = str(top_conf[i])
 
             top, left, bottom, right = boxes[i]
