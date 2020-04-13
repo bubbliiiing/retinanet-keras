@@ -47,7 +47,7 @@ if __name__ == "__main__":
     model.compile(loss={
                 'regression'    : smooth_l1(),
                 'classification': focal()
-            },optimizer=keras.optimizers.Adam(lr=1e-5, clipnorm=0.001)
+            },optimizer=keras.optimizers.Adam(lr=1e-4, clipnorm=0.001)
     )
 
     model.fit_generator(    gen.generate(True), 
@@ -65,7 +65,7 @@ if __name__ == "__main__":
     model.compile(loss={
                 'regression'    : smooth_l1(),
                 'classification': focal()
-            },optimizer=keras.optimizers.Adam(lr=1e-6, clipnorm=0.001)
+            },optimizer=keras.optimizers.Adam(lr=1e-5, clipnorm=0.001)
     )
     model.fit_generator(    gen.generate(True), 
             steps_per_epoch=num_train//BATCH_SIZE,
