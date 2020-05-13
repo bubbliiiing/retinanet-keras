@@ -22,26 +22,28 @@ def focal(alpha=0.25, gamma=2.0):
         classification = y_pred
 
         # 找出存在目标的先验框
-        indices_for_object        = tf.where(keras.backend.equal(anchor_state, 1))
-        labels_for_object         = tf.gather_nd(labels, indices_for_object)
-        classification_for_object = tf.gather_nd(classification, indices_for_object)
+        indices_for_object        = backend.where(keras.backend.equal(anchor_state, 1))
+        labels_for_object         = backend.gather_nd(labels, indices_for_object)
+        classification_for_object = backend.gather_nd(classification, indices_for_object)
 
         # 计算每一个先验框应该有的权重
         alpha_factor_for_object = keras.backend.ones_like(labels_for_object) * alpha
-        focal_weight_for_object = 1 - classification_for_object
+        alpha_factor_for_object = backend.where(keras.backend.equal(labels_for_object, 1), alpha_factor_for_object, 1 - alpha_factor_for_object)
+        focal_weight_for_object = backend.where(keras.backend.equal(labels_for_object, 1), 1 - classification_for_object, classification_for_object)
         focal_weight_for_object = alpha_factor_for_object * focal_weight_for_object ** gamma
 
         # 将权重乘上所求得的交叉熵
         cls_loss_for_object = focal_weight_for_object * keras.backend.binary_crossentropy(labels_for_object, classification_for_object)
 
         # 找出实际上为背景的先验框
-        indices_for_back        = tf.where(keras.backend.equal(anchor_state, 0))
-        labels_for_back         = tf.gather_nd(labels, indices_for_back)
-        classification_for_back = tf.gather_nd(classification, indices_for_back)
+        indices_for_back        = backend.where(keras.backend.equal(anchor_state, 0))
+        labels_for_back         = backend.gather_nd(labels, indices_for_back)
+        classification_for_back = backend.gather_nd(classification, indices_for_back)
 
         # 计算每一个先验框应该有的权重
-        alpha_factor_for_back = keras.backend.ones_like(labels_for_back) * (1-alpha)
-        focal_weight_for_back = classification_for_back
+        alpha_factor_for_back = keras.backend.ones_like(labels_for_back) * alpha
+        alpha_factor_for_back = backend.where(keras.backend.equal(labels_for_back, 1), alpha_factor_for_back, 1 - alpha_factor_for_back)
+        focal_weight_for_back = backend.where(keras.backend.equal(labels_for_back, 1), 1 - classification_for_back, classification_for_back)
         focal_weight_for_back = alpha_factor_for_back * focal_weight_for_back ** gamma
 
         # 将权重乘上所求得的交叉熵
@@ -53,13 +55,13 @@ def focal(alpha=0.25, gamma=2.0):
         normalizer = keras.backend.maximum(keras.backend.cast_to_floatx(1.0), normalizer)
 
         # 将所获得的loss除上正样本的数量
-        cls_loss_for_object = keras.backend.sum(cls_loss_for_object)/normalizer
-        cls_loss_for_back = keras.backend.sum(cls_loss_for_back)/normalizer
+        cls_loss_for_object = keras.backend.sum(cls_loss_for_object)
+        cls_loss_for_back = keras.backend.sum(cls_loss_for_back)
 
         # 总的loss
-        loss = cls_loss_for_object + cls_loss_for_back
+        loss = (cls_loss_for_object + cls_loss_for_back)/normalizer
 
-        # loss = tf.Print(loss, [loss, cls_loss_for_object, cls_loss_for_back], message='\nloss: ')
+        loss = tf.Print(loss, [K.shape(indices_for_object),K.shape(indices_for_back),classification_for_object,labels_for_object], message='\nloss: ')
     
         return loss
     return _focal
