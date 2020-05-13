@@ -61,7 +61,7 @@ def focal(alpha=0.25, gamma=2.0):
         # 总的loss
         loss = (cls_loss_for_object + cls_loss_for_back)/normalizer
 
-        loss = tf.Print(loss, [K.shape(indices_for_object),K.shape(indices_for_back),classification_for_object,labels_for_object], message='\nloss: ')
+        # loss = tf.Print(loss, [K.shape(indices_for_object),K.shape(indices_for_back),classification_for_object,labels_for_object], message='\nloss: ')
     
         return loss
     return _focal
