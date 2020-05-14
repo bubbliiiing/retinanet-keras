@@ -67,7 +67,7 @@ def focal(alpha=0.25, gamma=2.0):
     return _focal
 
 
-def smooth_l1(sigma=1.0):
+def smooth_l1(sigma=3.0):
     sigma_squared = sigma ** 2
 
     def _smooth_l1(y_true, y_pred):
