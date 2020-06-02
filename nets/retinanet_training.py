@@ -41,9 +41,8 @@ def focal(alpha=0.25, gamma=2.0):
         classification_for_back = backend.gather_nd(classification, indices_for_back)
 
         # 计算每一个先验框应该有的权重
-        alpha_factor_for_back = keras.backend.ones_like(labels_for_back) * alpha
-        alpha_factor_for_back = backend.where(keras.backend.equal(labels_for_back, 1), alpha_factor_for_back, 1 - alpha_factor_for_back)
-        focal_weight_for_back = backend.where(keras.backend.equal(labels_for_back, 1), 1 - classification_for_back, classification_for_back)
+        alpha_factor_for_back = keras.backend.ones_like(labels_for_back) * (1 - alpha)
+        focal_weight_for_back = classification_for_back
         focal_weight_for_back = alpha_factor_for_back * focal_weight_for_back ** gamma
 
         # 将权重乘上所求得的交叉熵
@@ -61,11 +60,8 @@ def focal(alpha=0.25, gamma=2.0):
         # 总的loss
         loss = (cls_loss_for_object + cls_loss_for_back)/normalizer
 
-        # loss = tf.Print(loss, [K.shape(indices_for_object),K.shape(indices_for_back),classification_for_object,labels_for_object], message='\nloss: ')
-    
         return loss
     return _focal
-
 
 def smooth_l1(sigma=3.0):
     sigma_squared = sigma ** 2
