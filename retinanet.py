@@ -62,8 +62,7 @@ class Retinanet(object):
         # 计算总的种类
         self.num_classes = len(self.class_names)
 
-        # 载入模型，如果原来的模型里已经包括了模型结构则直接载入。
-        # 否则先构建模型再载入
+        # 载入模型
         inputs = Input(self.model_image_size)
         self.retinanet_model = retinanet.resnet_retinanet(self.num_classes,inputs)
         self.retinanet_model.load_weights(self.model_path,by_name=True)
