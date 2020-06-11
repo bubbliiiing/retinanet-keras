@@ -17,6 +17,9 @@ if __name__ == "__main__":
     priors = get_anchors(model)
     bbox_util = BBoxUtility(NUM_CLASSES, priors)
 
+    #-------------------------------------------#
+    #   权值文件的下载请看README
+    #-------------------------------------------#
     model.load_weights("model_data/resnet50_coco_best_v2.1.0.h5",by_name=True,skip_mismatch=True)
 
     # 0.1用于验证，0.9用于训练
