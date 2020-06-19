@@ -206,7 +206,7 @@ class Generator(object):
                 regression = assignment[:,:5]
                 classification = assignment[:,5:]
                 
-                inputs.append(preprocess_input(img))          
+                inputs.append(img)        
                 target0.append(np.reshape(regression,[-1,5]))
                 target1.append(np.reshape(classification,[-1,self.num_classes+1]))
                 if len(target0) == self.batch_size:
