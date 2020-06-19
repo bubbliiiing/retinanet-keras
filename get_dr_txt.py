@@ -23,11 +23,13 @@ class mAP_Retinanet(Retinanet):
         results = self.bbox_util.detection_out(preds,self.prior,confidence_threshold=self.confidence)
         if len(results[0])<=0:
             return image
+        results = np.array(results)
 
         # 筛选出其中得分高于confidence的框
-        det_label = results[0][:, 0]
-        det_conf = results[0][:, 1]
-        det_xmin, det_ymin, det_xmax, det_ymax = results[0][:, 2], results[0][:, 3], results[0][:, 4], results[0][:, 5]
+        det_label = results[0][:, 5]
+        det_conf = results[0][:, 4]
+        det_xmin, det_ymin, det_xmax, det_ymax = results[0][:, 0], results[0][:, 1], results[0][:, 2], results[0][:, 3]
+        
         top_indices = [i for i, conf in enumerate(det_conf) if conf >= self.confidence]
         top_conf = det_conf[top_indices]
         top_label_indices = det_label[top_indices].tolist()
