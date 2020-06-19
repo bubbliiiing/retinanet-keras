@@ -17,7 +17,7 @@ from utils.anchors import get_anchors
 #--------------------------------------------#
 class Retinanet(object):
     _defaults = {
-        "model_path": 'model_data/retinanet_weights.h5',
+        "model_path": 'model_data/resnet50_coco_best_v2.1.0.h5',
         # "model_path": 'logs/ep014-loss1.010-val_loss1.000.h5',
         "classes_path": 'model_data/coco_classes.txt',
         "model_image_size" : (600, 600, 3),
