@@ -1,4 +1,3 @@
-
 from keras.applications.imagenet_utils import preprocess_input
 from keras import backend as K
 import keras
@@ -206,7 +205,8 @@ class Generator(object):
                 assignment = self.bbox_util.assign_boxes(y)
                 regression = assignment[:,:5]
                 classification = assignment[:,5:]
-                inputs.append(img)          
+                
+                inputs.append(preprocess_input(img))          
                 target0.append(np.reshape(regression,[-1,5]))
                 target1.append(np.reshape(classification,[-1,self.num_classes+1]))
                 if len(target0) == self.batch_size:
