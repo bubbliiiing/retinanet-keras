@@ -17,8 +17,8 @@ from utils.anchors import get_anchors
 #--------------------------------------------#
 class Retinanet(object):
     _defaults = {
-        "model_path": 'model_data/resnet50_coco_best_v2.1.0.h5',
-        #"model_path": 'logs/ep015-loss0.594-val_loss0.552.h5',
+        "model_path": 'model_data/retinanet_weights.h5',
+        # "model_path": 'logs/ep014-loss1.010-val_loss1.000.h5',
         "classes_path": 'model_data/coco_classes.txt',
         "model_image_size" : (600, 600, 3),
         "confidence": 0.5,
@@ -66,7 +66,8 @@ class Retinanet(object):
         # 计算总的种类
         self.num_classes = len(self.class_names)
 
-        # 载入模型
+        # 载入模型，如果原来的模型里已经包括了模型结构则直接载入。
+        # 否则先构建模型再载入
         inputs = Input(self.model_image_size)
         self.retinanet_model = retinanet.resnet_retinanet(self.num_classes,inputs)
         self.retinanet_model.load_weights(self.model_path,by_name=True)
@@ -97,11 +98,13 @@ class Retinanet(object):
         results = self.bbox_util.detection_out(preds,self.prior,confidence_threshold=self.confidence)
         if len(results[0])<=0:
             return image
+        results = np.array(results)
 
         # 筛选出其中得分高于confidence的框
-        det_label = results[0][:, 0]
-        det_conf = results[0][:, 1]
-        det_xmin, det_ymin, det_xmax, det_ymax = results[0][:, 2], results[0][:, 3], results[0][:, 4], results[0][:, 5]
+        det_label = results[0][:, 5]
+        det_conf = results[0][:, 4]
+        det_xmin, det_ymin, det_xmax, det_ymax = results[0][:, 0], results[0][:, 1], results[0][:, 2], results[0][:, 3]
+        
         top_indices = [i for i, conf in enumerate(det_conf) if conf >= self.confidence]
         top_conf = det_conf[top_indices]
         top_label_indices = det_label[top_indices].tolist()
