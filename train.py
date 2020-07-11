@@ -8,6 +8,10 @@ from keras.callbacks import TensorBoard, ModelCheckpoint, ReduceLROnPlateau, Ear
 from utils.utils import BBoxUtility
 from utils.anchors import get_anchors
 
+#----------------------------------------------------#
+#   检测精度mAP和pr曲线计算参考视频
+#   https://www.bilibili.com/video/BV1zE411u7Vw
+#----------------------------------------------------#
 if __name__ == "__main__":
     NUM_CLASSES = 20
     input_shape = (600, 600, 3)
@@ -17,9 +21,11 @@ if __name__ == "__main__":
     priors = get_anchors(model)
     bbox_util = BBoxUtility(NUM_CLASSES, priors)
 
-    #-------------------------------------------#
-    #   权值文件的下载请看README
-    #-------------------------------------------#
+    #------------------------------------------------------#
+    #   权值文件请看README，百度网盘下载
+    #   训练自己的数据集时提示维度不匹配正常
+    #   预测的东西都不一样了自然维度不匹配
+    #------------------------------------------------------#
     model.load_weights("model_data/resnet50_coco_best_v2.1.0.h5",by_name=True,skip_mismatch=True)
 
     # 0.1用于验证，0.9用于训练
@@ -43,6 +49,11 @@ if __name__ == "__main__":
     gen = Generator(bbox_util, BATCH_SIZE, lines[:num_train], lines[num_train:],
                     (input_shape[0], input_shape[1]),NUM_CLASSES)
 
+    #------------------------------------------------------#
+    #   主干特征提取网络特征通用，冻结训练可以加快训练速度
+    #   也可以在训练初期防止权值被破坏。
+    #   提示OOM或者显存不足请调小Batch_size
+    #------------------------------------------------------#
     for i in range(174):
         model.layers[i].trainable = False
 
