@@ -8,7 +8,7 @@ from utils import backend
 from PIL import Image
 from keras.utils.data_utils import get_file
 from matplotlib.colors import rgb_to_hsv, hsv_to_rgb
-
+import cv2
 def rand(a=0, b=1):
     return np.random.rand()*(b-a) + a
 
