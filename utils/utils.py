@@ -242,11 +242,11 @@ class BBoxUtility(object):
 
                 detection = detections[cls_mask]
                 scores = detection[:,4]
-                # 5、根据得分对该种类进行从大到小排序。
+                # 根据得分对该种类进行从大到小排序。
                 arg_sort = np.argsort(scores)[::-1]
                 detection = detection[arg_sort]
                 while np.shape(detection)[0]>0:
-                    # 6、每次取出得分最大的框，计算其与其它所有预测框的重合程度，重合程度过大的则剔除。
+                    # 每次取出得分最大的框，计算其与其它所有预测框的重合程度，重合程度过大的则剔除。
                     best_box.append(detection[0])
                     if len(detection) == 1:
                         break
