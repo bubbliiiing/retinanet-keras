@@ -234,7 +234,7 @@ class BBoxUtility(object):
             if len(unique_class) == 0:
                 results.append(best_box)
                 continue
-            # 4、对种类进行循环，
+            # 对种类进行循环，
             # 非极大抑制的作用是筛选出一定区域内属于同一种类得分最大的框，
             # 对种类进行循环可以帮助我们对每一个类分别进行非极大抑制。
             for c in unique_class:
