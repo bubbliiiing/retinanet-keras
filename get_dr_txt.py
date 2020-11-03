@@ -1,16 +1,21 @@
-from keras.layers import Input
-from retinanet import Retinanet
-from PIL import Image
-from keras.applications.imagenet_utils import preprocess_input
-from utils.utils import BBoxUtility,letterbox_image,retinanet_correct_boxes
-import numpy as np
 import os
+
+import numpy as np
+from keras.applications.imagenet_utils import preprocess_input
+from keras.layers import Input
+from PIL import Image
+
+from retinanet import Retinanet
+from utils.utils import BBoxUtility, letterbox_image, retinanet_correct_boxes
+
+
 class mAP_Retinanet(Retinanet):
     #---------------------------------------------------#
     #   检测图片
     #---------------------------------------------------#
     def detect_image(self,image_id,image):
-        self.confidence = 0.05
+        self.confidence = 0.01
+        self.bbox_util._nms_thresh = 0.5
         f = open("./input/detection-results/"+image_id+".txt","w") 
         image_shape = np.array(np.shape(image)[0:2])
         crop_img,x_offset,y_offset = letterbox_image(image, [self.model_image_size[0],self.model_image_size[1]])
