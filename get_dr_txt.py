@@ -7,6 +7,7 @@ from PIL import Image
 
 from retinanet import Retinanet
 from utils.utils import BBoxUtility, letterbox_image, retinanet_correct_boxes
+from tqdm import tqdm
 
 
 class mAP_Retinanet(Retinanet):
@@ -64,7 +65,7 @@ if not os.path.exists("./input/images-optional"):
     os.makedirs("./input/images-optional")
 
 
-for image_id in image_ids:
+for image_id in tqdm(image_ids):
     image_path = "./VOCdevkit/VOC2007/JPEGImages/"+image_id+".jpg"
     image = Image.open(image_path)
     image.save("./input/images-optional/"+image_id+".jpg")
