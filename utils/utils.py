@@ -89,7 +89,7 @@ class BBoxUtility(object):
         iou = inter / union
         return iou
 
-    def encode_box(self, box, return_iou=True, variance=0.2):
+    def encode_ignore_box(self, box, return_iou=True, variance=0.2):
         iou = self.iou(box)
         ignored_box = np.zeros((self.num_priors, 1))
         #---------------------------------------------------#
@@ -139,7 +139,7 @@ class BBoxUtility(object):
         #---------------------------------------------------#
         #   对每一个真实框都进行iou计算
         #---------------------------------------------------#
-        apply_along_axis_boxes = np.apply_along_axis(self.encode_box, 1, boxes[:, :4])
+        apply_along_axis_boxes = np.apply_along_axis(self.encode_ignore_box, 1, boxes[:, :4])
         encoded_boxes = np.array([apply_along_axis_boxes[i, 0] for i in range(len(apply_along_axis_boxes))])
         ingored_boxes = np.array([apply_along_axis_boxes[i, 1] for i in range(len(apply_along_axis_boxes))])
 
