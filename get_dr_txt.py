@@ -7,11 +7,10 @@ import os
 
 import numpy as np
 from keras.applications.imagenet_utils import preprocess_input
-from keras.layers import Input
 from PIL import Image
 
 from retinanet import Retinanet
-from utils.utils import BBoxUtility, letterbox_image, retinanet_correct_boxes
+from utils.utils import letterbox_image, retinanet_correct_boxes
 from tqdm import tqdm
 
 

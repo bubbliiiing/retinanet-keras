@@ -1,6 +1,6 @@
-import numpy as np
 import keras
-import tensorflow as tf
+import numpy as np
+
 
 class AnchorParameters:
     def __init__(self, sizes, strides, ratios, scales):

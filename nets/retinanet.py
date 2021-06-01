@@ -1,10 +1,11 @@
 import keras
 import keras.layers
-
-from nets.resnet import ResNet50
 from utils.anchors import AnchorParameters
 from utils.utils import PriorProbability
-from nets import layers
+
+from nets.layers import UpsampleLike
+from nets.resnet import ResNet50
+
 
 #-----------------------------------------#
 #   Retinahead 获得回归预测结果
@@ -94,11 +95,11 @@ def resnet_retinanet(num_classes, input_shape=(600, 600, 3), name='retinanet'):
     P5              = keras.layers.Conv2D(256, kernel_size=1, strides=1, padding='same', name='C5_reduced')(C5)
 
     # 19,19,256 -> 38,38,256
-    P5_upsampled    = layers.UpsampleLike(name='P5_upsampled')([P5, P4])
+    P5_upsampled    = UpsampleLike(name='P5_upsampled')([P5, P4])
     # 38,38,256 + 38,38,256 -> 38,38,256
     P4              = keras.layers.Add(name='P4_merged')([P5_upsampled, P4])
     # 38,38,256 -> 75,75,256
-    P4_upsampled    = layers.UpsampleLike(name='P4_upsampled')([P4, P3])
+    P4_upsampled    = UpsampleLike(name='P4_upsampled')([P4, P3])
     # 75,75,256 + 75,75,256 -> 75,75,256
     P3              = keras.layers.Add(name='P3_merged')([P4_upsampled, P3])
 

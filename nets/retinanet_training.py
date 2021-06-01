@@ -1,13 +1,14 @@
+import os
 from random import shuffle
 
 import cv2
 import keras
+import matplotlib.pyplot as plt
 import numpy as np
+import scipy.signal
 import tensorflow as tf
-from keras import backend as K
 from keras.applications.imagenet_utils import preprocess_input
 from PIL import Image
-from utils import backend
 
 
 def rand(a=0, b=1):
@@ -27,23 +28,23 @@ def focal(alpha=0.25, gamma=2.0):
         classification = y_pred
 
         # 找出存在目标的先验框
-        indices_for_object        = backend.where(keras.backend.equal(anchor_state, 1))
-        labels_for_object         = backend.gather_nd(labels, indices_for_object)
-        classification_for_object = backend.gather_nd(classification, indices_for_object)
+        indices_for_object        = tf.where(keras.backend.equal(anchor_state, 1))
+        labels_for_object         = tf.gather_nd(labels, indices_for_object)
+        classification_for_object = tf.gather_nd(classification, indices_for_object)
 
         # 计算每一个先验框应该有的权重
         alpha_factor_for_object = keras.backend.ones_like(labels_for_object) * alpha
-        alpha_factor_for_object = backend.where(keras.backend.equal(labels_for_object, 1), alpha_factor_for_object, 1 - alpha_factor_for_object)
-        focal_weight_for_object = backend.where(keras.backend.equal(labels_for_object, 1), 1 - classification_for_object, classification_for_object)
+        alpha_factor_for_object = tf.where(keras.backend.equal(labels_for_object, 1), alpha_factor_for_object, 1 - alpha_factor_for_object)
+        focal_weight_for_object = tf.where(keras.backend.equal(labels_for_object, 1), 1 - classification_for_object, classification_for_object)
         focal_weight_for_object = alpha_factor_for_object * focal_weight_for_object ** gamma
 
         # 将权重乘上所求得的交叉熵
         cls_loss_for_object = focal_weight_for_object * keras.backend.binary_crossentropy(labels_for_object, classification_for_object)
 
         # 找出实际上为背景的先验框
-        indices_for_back        = backend.where(keras.backend.equal(anchor_state, 0))
-        labels_for_back         = backend.gather_nd(labels, indices_for_back)
-        classification_for_back = backend.gather_nd(classification, indices_for_back)
+        indices_for_back        = tf.where(keras.backend.equal(anchor_state, 0))
+        labels_for_back         = tf.gather_nd(labels, indices_for_back)
+        classification_for_back = tf.gather_nd(classification, indices_for_back)
 
         # 计算每一个先验框应该有的权重
         alpha_factor_for_back = keras.backend.ones_like(labels_for_back) * (1 - alpha)
@@ -77,14 +78,14 @@ def smooth_l1(sigma=3.0):
         anchor_state      = y_true[:, :, -1]
 
         # 找出存在目标的先验框
-        indices           = backend.where(keras.backend.equal(anchor_state, 1))
-        regression        = backend.gather_nd(regression, indices)
-        regression_target = backend.gather_nd(regression_target, indices)
+        indices           = tf.where(keras.backend.equal(anchor_state, 1))
+        regression        = tf.gather_nd(regression, indices)
+        regression_target = tf.gather_nd(regression_target, indices)
 
         # 计算smooth L1损失
         regression_diff = regression - regression_target
         regression_diff = keras.backend.abs(regression_diff)
-        regression_loss = backend.where(
+        regression_loss = tf.where(
             keras.backend.less(regression_diff, 1.0 / sigma_squared),
             0.5 * sigma_squared * keras.backend.pow(regression_diff, 2),
             regression_diff - 0.5 / sigma_squared
@@ -243,3 +244,55 @@ class Generator(object):
                     target0 = []
                     target1 = []
                     yield preprocess_input(tmp_inp), tmp_targets
+
+class LossHistory(keras.callbacks.Callback):
+    def __init__(self, log_dir):
+        import datetime
+        curr_time = datetime.datetime.now()
+        time_str = datetime.datetime.strftime(curr_time,'%Y_%m_%d_%H_%M_%S')
+        self.log_dir    = log_dir
+        self.time_str   = time_str
+        self.save_path  = os.path.join(self.log_dir, "loss_" + str(self.time_str))  
+        self.losses     = []
+        self.val_loss   = []
+        
+        os.makedirs(self.save_path)
+
+    def on_epoch_end(self, batch, logs={}):
+        self.losses.append(logs.get('loss'))
+        self.val_loss.append(logs.get('val_loss'))
+        with open(os.path.join(self.save_path, "epoch_loss_" + str(self.time_str) + ".txt"), 'a') as f:
+            f.write(str(logs.get('loss')))
+            f.write("\n")
+        with open(os.path.join(self.save_path, "epoch_val_loss_" + str(self.time_str) + ".txt"), 'a') as f:
+            f.write(str(logs.get('val_loss')))
+            f.write("\n")
+        self.loss_plot()
+
+    def loss_plot(self):
+        iters = range(len(self.losses))
+
+        plt.figure()
+        plt.plot(iters, self.losses, 'red', linewidth = 2, label='train loss')
+        plt.plot(iters, self.val_loss, 'coral', linewidth = 2, label='val loss')
+        try:
+            if len(self.losses) < 25:
+                num = 5
+            else:
+                num = 15
+            
+            plt.plot(iters, scipy.signal.savgol_filter(self.losses, num, 3), 'green', linestyle = '--', linewidth = 2, label='smooth train loss')
+            plt.plot(iters, scipy.signal.savgol_filter(self.val_loss, num, 3), '#8B4513', linestyle = '--', linewidth = 2, label='smooth val loss')
+        except:
+            pass
+
+        plt.grid(True)
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
+        plt.title('A Loss Curve')
+        plt.legend(loc="upper right")
+
+        plt.savefig(os.path.join(self.save_path, "epoch_loss_" + str(self.time_str) + ".png"))
+
+        plt.cla()
+        plt.close("all")
