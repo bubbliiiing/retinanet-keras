@@ -59,14 +59,14 @@ class BBoxUtility(object):
 
     def decode_boxes(self, mbox_loc, anchors, variance=0.2):
         # 获得先验框的宽与高
-        prior_width = anchors[:, 2] - anchors[:, 0]
-        prior_height = anchors[:, 3] - anchors[:, 1]
+        anchor_width = anchors[:, 2] - anchors[:, 0]
+        anchor_height = anchors[:, 3] - anchors[:, 1]
 
         # 获取真实框的左上角与右下角
-        decode_bbox_xmin = mbox_loc[:,0] * prior_width * variance + anchors[:, 0]
-        decode_bbox_ymin = mbox_loc[:,1] * prior_height * variance + anchors[:, 1]
-        decode_bbox_xmax = mbox_loc[:,2] * prior_width * variance + anchors[:, 2]
-        decode_bbox_ymax = mbox_loc[:,3] * prior_height * variance + anchors[:, 3]
+        decode_bbox_xmin = mbox_loc[:,0] * anchor_width * variance + anchors[:, 0]
+        decode_bbox_ymin = mbox_loc[:,1] * anchor_height * variance + anchors[:, 1]
+        decode_bbox_xmax = mbox_loc[:,2] * anchor_width * variance + anchors[:, 2]
+        decode_bbox_ymax = mbox_loc[:,3] * anchor_height * variance + anchors[:, 3]
 
         # 真实框的左上角与右下角进行堆叠
         decode_bbox = np.concatenate((decode_bbox_xmin[:, None],
