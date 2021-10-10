@@ -274,7 +274,7 @@ class RetinanetDatasets(keras.utils.Sequence):
 
         #---------------------------------------------------#
         #   在reshape后，获得的ingored_boxes的shape为：
-        #   [num_true_box, num_priors, 1] 其中1为iou
+        #   [num_true_box, num_anchors, 1] 其中1为iou
         #---------------------------------------------------#
         ingored_boxes   = ingored_boxes.reshape(-1, self.num_anchors, 1)
         ignore_iou      = ingored_boxes[:, :, 0].max(axis=0)
