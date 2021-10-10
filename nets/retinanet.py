@@ -1,17 +1,39 @@
+import math
+
 import keras
 import keras.layers
-from utils.anchors import AnchorParameters
-from utils.utils import PriorProbability
+import numpy as np
+import tensorflow as tf
 
-from nets.layers import UpsampleLike
 from nets.resnet import ResNet50
 
+
+class UpsampleLike(keras.layers.Layer):
+    def call(self, inputs, **kwargs):
+        source, target = inputs
+        target_shape = keras.backend.shape(target)
+        return tf.image.resize_images(source, (target_shape[1], target_shape[2]), method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=False)
+
+    def compute_output_shape(self, input_shape):
+        return (input_shape[0][0],) + input_shape[1][1:3] + (input_shape[0][-1],)
+
+class PriorProbability(keras.initializers.Initializer):
+    def __init__(self, probability=0.01):
+        self.probability = probability
+
+    def get_config(self):
+        return {'probability': self.probability}
+
+    def __call__(self, shape, dtype=None):
+        # set bias to -log((1 - p)/p) for foreground
+        result = np.ones(shape, dtype=dtype) * -math.log((1 - self.probability) / self.probability)
+        return result
 
 #-----------------------------------------#
 #   Retinahead 获得回归预测结果
 #   所有特征层共用一个Retinahead
 #-----------------------------------------#
-def make_last_layer_loc(num_classes,num_anchors,pyramid_feature_size=256):
+def make_last_layer_loc(num_anchors, pyramid_feature_size = 256):
     inputs = keras.layers.Input(shape=(None, None, pyramid_feature_size)) 
     options = {
         'kernel_size'        : 3,
@@ -29,8 +51,8 @@ def make_last_layer_loc(num_classes,num_anchors,pyramid_feature_size=256):
     #-----------------------------------------#
     #   获得回归预测结果，并进行reshape
     #-----------------------------------------#
-    outputs = keras.layers.Conv2D(num_anchors * 4, name='pyramid_regression', **options)(outputs)
-    regression = keras.layers.Reshape((-1, 4), name='pyramid_regression_reshape')(outputs)
+    outputs     = keras.layers.Conv2D(num_anchors * 4, name='pyramid_regression', **options)(outputs)
+    regression  = keras.layers.Reshape((-1, 4), name='pyramid_regression_reshape')(outputs)
     #-----------------------------------------#
     #   构建成一个模型
     #-----------------------------------------#
@@ -59,16 +81,16 @@ def make_last_layer_cls(num_classes, num_anchors, pyramid_feature_size=256):
     #   获得分类预测结果，并进行reshape
     #-----------------------------------------#
     outputs = keras.layers.Conv2D(filters=num_classes * num_anchors,
-        kernel_initializer=keras.initializers.normal(mean=0.0, stddev=0.01, seed=None),
-        bias_initializer=PriorProbability(probability=0.01),
+        kernel_initializer  = keras.initializers.normal(mean=0.0, stddev=0.01, seed=None),
+        bias_initializer    = PriorProbability(probability=0.01),
         name='pyramid_classification'.format(),
         **options
     )(outputs)
-    outputs = keras.layers.Reshape((-1, num_classes), name='pyramid_classification_reshape')(outputs)
+    outputs         = keras.layers.Reshape((-1, num_classes), name='pyramid_classification_reshape')(outputs)
     #-----------------------------------------#
     #   为了转换成概率，使用sigmoid激活函数
     #-----------------------------------------#
-    classification = keras.layers.Activation('sigmoid', name='pyramid_classification_sigmoid')(outputs)
+    classification  = keras.layers.Activation('sigmoid', name='pyramid_classification_sigmoid')(outputs)
     #-----------------------------------------#
     #   构建成一个模型
     #-----------------------------------------#
@@ -76,16 +98,15 @@ def make_last_layer_cls(num_classes, num_anchors, pyramid_feature_size=256):
     return classification_model
 
 
-def resnet_retinanet(num_classes, input_shape=(600, 600, 3), name='retinanet'):
+def resnet_retinanet(input_shape, num_classes, num_anchors = 9, name='retinanet'):
     inputs = keras.layers.Input(shape=input_shape)
-    resnet = ResNet50(inputs)
     #-----------------------------------------#
     #   取出三个有效特征层，分别是C3、C4、C5
     #   C3     75,75,512
     #   C4     38,38,1024
     #   C5     19,19,2048
     #-----------------------------------------#
-    C3, C4, C5 = resnet.outputs[1:]
+    C3, C4, C5 = ResNet50(inputs)
 
     # 75,75,512 -> 75,75,256
     P3              = keras.layers.Conv2D(256, kernel_size=1, strides=1, padding='same', name='C3_reduced')(C3)
@@ -116,13 +137,12 @@ def resnet_retinanet(num_classes, input_shape=(600, 600, 3), name='retinanet'):
     # 10,10,256 -> 5,5,256
     P7              = keras.layers.Conv2D(256, kernel_size=3, strides=2, padding='same', name='P7')(P7)
 
-    features =  [P3, P4, P5, P6, P7]
+    features        =  [P3, P4, P5, P6, P7]
 
-    num_anchors = AnchorParameters.default.num_anchors()
-    regression_model = make_last_layer_loc(num_classes,num_anchors)
-    classification_model = make_last_layer_cls(num_classes,num_anchors)
+    regression_model        = make_last_layer_loc(num_anchors)
+    classification_model    = make_last_layer_cls(num_classes, num_anchors)
 
-    regressions = []
+    regressions     = []
     classifications = []
     
     #----------------------------------------------------------#
@@ -131,13 +151,13 @@ def resnet_retinanet(num_classes, input_shape=(600, 600, 3), name='retinanet'):
     #   将所有特征层的预测结果进行堆叠
     #----------------------------------------------------------#
     for feature in features:
-        regression = regression_model(feature)
-        classification = classification_model(feature)
+        regression      = regression_model(feature)
+        classification  = classification_model(feature)
         
         regressions.append(regression)
         classifications.append(classification)
 
-    regressions = keras.layers.Concatenate(axis=1, name="regression")(regressions)
+    regressions     = keras.layers.Concatenate(axis=1, name="regression")(regressions)
     classifications = keras.layers.Concatenate(axis=1, name="classification")(classifications)
 
     model = keras.models.Model(inputs, [regressions, classifications], name=name)

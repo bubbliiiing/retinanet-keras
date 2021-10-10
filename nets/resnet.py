@@ -6,9 +6,7 @@ from keras.layers import (Activation, BatchNormalization, Conv2D, Input,
                           MaxPooling2D, ZeroPadding2D)
 from keras.models import Model
 
-
 def identity_block(input_tensor, kernel_size, filters, stage, block):
-
     filters1, filters2, filters3 = filters
 
     conv_name_base = 'res' + str(stage) + block + '_branch'
@@ -77,7 +75,6 @@ def ResNet50(inputs):
     x = conv_block(x, 3, [64, 64, 256], stage=2, block='a', strides=(1, 1))
     x = identity_block(x, 3, [64, 64, 256], stage=2, block='b')
     x = identity_block(x, 3, [64, 64, 256], stage=2, block='c')
-    y0 = x
 
     # 150,150,256 -> 75,75,512
     x = conv_block(x, 3, [128, 128, 512], stage=3, block='a')
@@ -100,8 +97,7 @@ def ResNet50(inputs):
     x = identity_block(x, 3, [512, 512, 2048], stage=5, block='b')
     x = identity_block(x, 3, [512, 512, 2048], stage=5, block='c')
     y3 = x
-    model = Model(img_input, [y0,y1,y2,y3], name='resnet50')
-    return model
+    return y1, y2, y3
 
 if __name__ == "__main__":
     inputs = Input(shape=(600, 600, 3))
