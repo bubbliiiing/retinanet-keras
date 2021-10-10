@@ -21,8 +21,8 @@ keras==2.1.5
 
 ## 文件下载
 训练所需的resnet50_coco_best_v2.1.0.h5可以在百度云下载。  
-链接: https://pan.baidu.com/s/1qS7_QozWsdpjYTcnMKG50w  
-提取码: i8w8  
+链接: https://pan.baidu.com/s/11wIL0VdRJ-lr9uGIy5vNig    
+提取码: i1a4   
 
 VOC数据集下载地址如下，里面已经包括了训练集、测试集、验证集（与测试集一样），无需再次划分：  
 链接: https://pan.baidu.com/s/1YuBbBKxm2FGgTU5OfaeC5A    
