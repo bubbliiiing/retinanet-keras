@@ -1,6 +1,9 @@
 ## Retinanet：目标检测模型在Keras当中的实现
 ---
 
+**2021年10月12日更新：**   
+**进行了大幅度的更新，对代码的模块进行修改，加了大量注释。**   
+
 ## 目录
 1. [性能情况 Performance](#性能情况)
 2. [所需环境 Environment](#所需环境)
@@ -20,7 +23,7 @@ tensorflow-gpu==1.13.1
 keras==2.1.5  
 
 ## 文件下载
-训练所需的resnet50_coco_best_v2.1.0.h5可以在百度云下载。  
+训练所需的resnet50_coco_best_v2.1.0.h5和主干的权值可以在百度云下载。  
 链接: https://pan.baidu.com/s/11wIL0VdRJ-lr9uGIy5vNig    
 提取码: i1a4   
 
