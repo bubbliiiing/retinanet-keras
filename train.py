@@ -225,8 +225,8 @@ if __name__ == "__main__":
         #   判断当前batch_size与64的差别，自适应调整学习率
         #-------------------------------------------------------------------#
         nbs     = 64
-        Init_lr_fit = max(batch_size / nbs * Init_lr, 1e-4)
-        Min_lr_fit  = max(batch_size / nbs * Min_lr, 1e-6)
+        Init_lr_fit = max(batch_size / nbs * Init_lr, 3e-4)
+        Min_lr_fit  = max(batch_size / nbs * Min_lr, 3e-6)
 
         optimizer = {
             'adam'  : Adam(lr = Init_lr_fit, beta_1 = momentum),
@@ -296,8 +296,8 @@ if __name__ == "__main__":
             #   判断当前batch_size与64的差别，自适应调整学习率
             #-------------------------------------------------------------------#
             nbs     = 64
-            Init_lr_fit = max(batch_size / nbs * Init_lr, 1e-4)
-            Min_lr_fit  = max(batch_size / nbs * Min_lr, 1e-6)
+            Init_lr_fit = max(batch_size / nbs * Init_lr, 3e-4)
+            Min_lr_fit  = max(batch_size / nbs * Min_lr, 3e-6)
             #---------------------------------------#
             #   获得学习率下降的公式
             #---------------------------------------#
