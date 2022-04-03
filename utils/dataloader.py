@@ -48,7 +48,7 @@ class RetinanetDatasets(keras.utils.Sequence):
             regression      = assignment[:,:5]
             classification  = assignment[:,5:]
 
-            image_data.append(preprocess_input(image))
+            image_data.append(preprocess_input(np.array(image, np.float32)))
             regressions.append(regression)
             classifications.append(classification)
 
