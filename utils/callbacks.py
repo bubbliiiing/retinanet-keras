@@ -10,9 +10,10 @@ import shutil
 import numpy as np
 
 from keras import backend as K
+from keras.applications.imagenet_utils import preprocess_input
 from PIL import Image
 from tqdm import tqdm
-from .utils import cvtColor, preprocess_input, resize_image
+from .utils import cvtColor, resize_image
 from .utils_bbox import BBoxUtility
 from .utils_map import get_coco_map, get_map
 
